@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>مرحبًا، {{ user.username }}!</h1>
+    
+    <div class="tasks-box">
+        <h2>مهامك</h2>
+        <ul>
+            {% for task in tasks %}
+                <li>
+                    <div class="task">
+                        <h3>{{ task.title }}</h3>
+                        <p>{{ task.description }}</p>
+                        <p>تاريخ البداية: {{ task.start_date }}</p>
+                        <p>تاريخ النهاية: {{ task.end_date }}</p>
+                        <p>الأولوية: {{ task.get_priority_display }}</p>
+                        <p>الحالة: {{ task.get_status_display }}</p>
+                    </div>
+                </li>
+            {% empty %}
+                <li>لا توجد مهام مخصصة لك حالياً.</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

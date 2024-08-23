@@ -1,0 +1,134 @@
+# Documentation
+
+## Models
+
+### Subscriber
+- **name**: `CharField` - الاسم الكامل للمشترك.
+- **address**: `TextField` - العنوان، يمكن أن يكون فارغاً.
+- **email**: `EmailField` - البريد الإلكتروني، يمكن أن يكون فارغاً.
+- **phone**: `CharField` - رقم الهاتف، يمكن أن يكون فارغاً.
+- **created_at**: `DateTimeField` - تاريخ إنشاء السجل.
+- **subscriber_balance**: `DecimalField` - رصيد المشترك.
+
+#### Methods
+- **update_batch**: يحسب ويحدث رصيد المشترك بناءً على مجموع أرصدة الفواتير المرتبطة.
+
+### Subscribe
+- **name**: `CharField` - اسم الاشتراك.
+- **description**: `TextField` - وصف الاشتراك، يمكن أن يكون فارغاً.
+- **price**: `DecimalField` - سعر الاشتراك.
+
+### PaymentMethod
+- **name**: `CharField` - طريقة الدفع (خيارات: Cash, Credit Card, Bank Transfer, Western Union).
+- **additional_fields**: `JSONField` - حقول إضافية لتخزين معلومات إضافية حول طريقة الدفع.
+
+### Invoice
+- **client**: `ForeignKey` - المشترك المرتبط بالفاتورة.
+- **date**: `DateTimeField` - تاريخ الفاتورة.
+- **due_date**: `DateField` - تاريخ الاستحقاق.
+- **total**: `DecimalField` - إجمالي الفاتورة.
+- **payment**: `DecimalField` - المبلغ المدفوع.
+- **balance**: `DecimalField` - الرصيد المتبقي.
+- **status**: `CharField` - حالة الفاتورة (خيارات: Paid, Partially Paid, Unpaid).
+- **payment_method**: `ForeignKey` - طريقة الدفع المستخدمة.
+
+#### Methods
+- **save**: يقوم بتحديث الرصيد والحالة قبل حفظ الفاتورة.
+- **update_total**: يحدث إجمالي الفاتورة بناءً على عناصر الفاتورة.
+- **update_balance_and_status**: يحسب الرصيد ويحدث الحالة بناءً على الدفع.
+
+### InvoiceItem
+- **invoice**: `ForeignKey` - الفاتورة المرتبطة.
+- **product**: `ForeignKey` - الاشتراك أو المنتج المرتبط.
+- **quantity**: `IntegerField` - كمية المنتج.
+- **price**: `DecimalField` - سعر المنتج.
+- **total**: `DecimalField` - الإجمالي (كمية × سعر).
+
+#### Methods
+- **get_total**: يحسب الإجمالي بناءً على الكمية والسعر.
+- **save**: يحدد السعر بناءً على المنتج ويحفظ الإجمالي.
+
+## Signals
+
+### Signal Handlers
+- **pre_save (InvoiceItem)**: يحدد السعر من المنتج إذا لم يكن محدداً.
+- **post_save (InvoiceItem)**: يحدث إجمالي الفاتورة بعد حفظ عنصر الفاتورة.
+- **post_delete (InvoiceItem)**: يحدث إجمالي الفاتورة بعد حذف عنصر الفاتورة.
+- **post_save (Invoice)**: يحدث رصيد المشترك بعد حفظ الفاتورة.
+- **post_delete (Invoice)**: يحدث رصيد المشترك بعد حذف الفاتورة.
+
+### Expense
+- **category**: `CharField` - فئة المصروف.
+- **amount**: `DecimalField` - المبلغ.
+- **date**: `DateField` - تاريخ المصروف.
+- **description**: `TextField` - وصف المصروف، يمكن أن يكون فارغاً.
+- **attachment**: `FileField` - مرفق للمصروف، يمكن أن يكون فارغاً.
+
+#### Methods
+- **__str__**: يعرض فئة المصروف والمبلغ.
+#####################################################################################################################
+
+## Custom Filters and Actions
+
+### BalanceFilter
+- **Purpose**: فلتر مخصص يعرض الفواتير بناءً على قيم الرصيد.
+- **Lookups**:
+  - `zero`: يعرض الفواتير التي لها رصيد صفر.
+  - `positive`: يعرض الفواتير التي لها رصيد إيجابي.
+  - `negative`: يعرض الفواتير التي لها رصيد سلبي.
+  - `low`: يعرض الفواتير التي لها رصيد أقل من 100.
+  - `medium`: يعرض الفواتير التي لها رصيد بين 100 و 500.
+  - `high`: يعرض الفواتير التي لها رصيد أكثر من 500.
+- **Method**: `queryset` - يعدل مجموعة الاستعلام بناءً على القيمة المحددة.
+
+### print_invoice
+- **Purpose**: إجراء مخصص لطباعة فاتورة واحدة كملف HTML.
+- **Behavior**: يعرض الفاتورة في مستعرض الويب كملف HTML إذا تم تحديد فاتورة واحدة فقط.
+- **Short Description**: "طباعة الفاتورة"
+
+## Admin Models
+
+### InvoiceAdmin
+- **List Display**: يعرض الأعمدة: `id`, `client`, `date`, `due_date`, `total`, `payment`, `balance`, `status`, `payment_method`.
+- **List Filter**: يتضمن فلاتر: `status`, `payment_method`, `date`, وفلتر `BalanceFilter`.
+- **Fieldsets**:
+  - **None**: الحقول: `client`, `due_date`, `total`, `payment`, `balance`, `payment_method`.
+  - **معلومات إضافية**: الحقول: `date`، مع تصنيف القوائم المطبقة.
+- **Inlines**: يتضمن نموذج `InvoiceItemInline` لإدخال عناصر الفاتورة.
+- **Actions**: يتضمن إجراء `print_invoice`.
+- **Readonly Fields**: `date` فقط للعرض.
+- **Verbose Names**: 
+  - **verbose_name**: 'فاتورة'
+  - **verbose_name_plural**: 'الفواتير'
+- **Custom Changelist View**: يعرض إجمالي المبالغ للفواتير في قائمة الفواتير.
+
+### SubscriberAdmin
+- **List Display**: يعرض الأعمدة: `name`, `email`, `phone`, `subscriber_balance`, `created_at`.
+- **Search Fields**: البحث في: `name`, `email`, `phone`.
+- **List Filter**: يتضمن فلتر `created_at`.
+- **Verbose Names**:
+  - **verbose_name**: 'مشترك'
+  - **verbose_name_plural**: 'المشتركون'
+
+### SubscribeAdmin
+- **List Display**: يعرض الأعمدة: `name`, `price`.
+- **Search Fields**: البحث في: `name`.
+- **Verbose Names**:
+  - **verbose_name**: 'اشتراك'
+  - **verbose_name_plural**: 'الاشتراكات'
+
+### ExpenseAdmin
+- **List Display**: يعرض الأعمدة: `category`, `amount`, `date`, `description`.
+- **Search Fields**: البحث في: `category`, `description`.
+- **List Filter**: يتضمن فلاتر: `date`, `category`.
+- **Verbose Names**:
+  - **verbose_name**: 'مصروف'
+  - **verbose_name_plural**: 'المصروفات'
+
+## Registering Models
+
+- **Subscriber**: مسجل بواسطة `SubscriberAdmin`.
+- **Subscribe**: مسجل بواسطة `SubscribeAdmin`.
+- **Invoice**: مسجل بواسطة `InvoiceAdmin`.
+- **Expense**: مسجل بواسطة `ExpenseAdmin`.
+- **PaymentMethod**: مسجل دون تخصيص إعدادات إدارة خاصة.

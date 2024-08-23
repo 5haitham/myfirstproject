@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>طباعة الفاتورة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            margin: 0;
+            padding: 0;
+            background: #f8f8f8;
+        }
+        .invoice-container {
+            width: 80%;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 5px 0;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        .details h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .details ul {
+            list-style: none;
+            padding: 0;
+        }
+        .details li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .summary {
+            margin-top: 20px;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+            font-size: 16px;
+        }
+        .summary p {
+            margin: 5px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    {% block content %}
+    <div class="invoice-container">
+        <div class="header">
+            <h1>فاتورة رقم: {{ invoice.id }}</h1>
+            <p>العميل: {{ invoice.client.name }}</p>
+            <p>تاريخ الإصدار: {{ invoice.date }}</p>
+            <p>تاريخ الاستحقاق: {{ invoice.due_date }}</p>
+        </div>
+        <div class="details">
+            <h2>التفاصيل:</h2>
+            <ul>
+                {% for item in invoice.items.all %}
+                    <li>{{ item.product.name }} - الكمية: {{ item.quantity }} - السعر: {{ item.price }} - الإجمالي: {{ item.total }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="summary">
+            <p><strong>المجموع الكلي:</strong> {{ invoice.total }}</p>
+            <p><strong>المدفوع:</strong> {{ invoice.payment }}</p>
+            <p><strong>الرصيد:</strong> {{ invoice.balance }}</p>
+        </div>
+        <div class="footer">
+            <p>شكرًا لتعاملكم معنا</p>
+        </div>
+    </div>
+    {% endblock content %}
+</body>
+</html>

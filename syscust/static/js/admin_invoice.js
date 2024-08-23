@@ -1,0 +1,25 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethodField = document.querySelector('#id_payment_method');
+    const beneficiaryNameField = document.querySelector('#id_beneficiary_name').closest('.form-row');
+    const accountNumberField = document.querySelector('#id_account_number').closest('.form-row');
+    const ibanField = document.querySelector('#id_iban').closest('.form-row');
+
+    function updatePaymentDetails() {
+        const selectedMethod = paymentMethodField.options[paymentMethodField.selectedIndex].value;
+        
+        if (selectedMethod === 'Bank Transfer') {
+            // Show bank transfer fields
+            beneficiaryNameField.style.display = 'block';
+            accountNumberField.style.display = 'block';
+            ibanField.style.display = 'block';
+        } else {
+            // Hide bank transfer fields
+            beneficiaryNameField.style.display = 'none';
+            accountNumberField.style.display = 'none';
+            ibanField.style.display = 'none';
+        }
+    }
+
+    paymentMethodField.addEventListener('change', updatePaymentDetails);
+    updatePaymentDetails();
+});

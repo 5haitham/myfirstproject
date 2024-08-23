@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المهام</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}"> <!-- إذا كان لديك ملفات CSS -->
+</head>
+<body>
+    <h1>قائمة المهام</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>العنوان</th>
+                <th>الوصف</th>
+                <th>تاريخ البداية</th>
+                <th>تاريخ النهاية</th>
+                <th>الأولوية</th>
+                <th>الحالة</th>
+                <th>مخصص لـ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.description }}</td>
+                    <td>{{ task.start_date }}</td>
+                    <td>{{ task.end_date }}</td>
+                    <td>{{ task.get_priority_display }}</td>
+                    <td>{{ task.get_status_display }}</td>
+                    <td>{{ task.assigned_to.username }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">لا توجد مهام حالياً.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
